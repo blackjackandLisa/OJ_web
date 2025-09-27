@@ -1,0 +1,53 @@
+# Django Online Judge System - Linux Server Requirements
+# Use this file for Linux server deployment
+
+# Core Django
+Django==4.2.24
+djangorestframework==3.16.0
+django-cors-headers==4.8.0
+
+# Image processing
+Pillow==10.2.0
+
+# Database dependencies
+sqlparse==0.5.3
+
+# ASGI support
+asgiref==3.9.2
+
+# Timezone data
+tzdata==2025.2
+
+# Production server (for Linux deployment)
+gunicorn==21.2.0
+whitenoise==6.6.0
+
+# Database adapters (uncomment as needed)
+# PostgreSQL support
+# psycopg2-binary==2.9.9
+
+# MySQL support  
+# mysqlclient==2.2.4
+
+# Redis cache support
+# redis==5.0.1
+# django-redis==5.4.0
+
+# Security and monitoring
+# django-extensions==3.2.3
+# django-debug-toolbar==4.2.0
+
+# Email support
+# django-ses==3.5.2
+
+# File upload handling
+# django-storages==1.14.2
+# boto3==1.34.44  # For AWS S3
+
+# Celery for async tasks
+# celery==5.3.4
+# redis==5.0.1  # Celery broker
+
+# Development tools (for development only)
+# django-debug-toolbar==4.2.0
+# django-extensions==3.2.3

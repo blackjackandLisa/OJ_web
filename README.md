@@ -55,35 +55,62 @@
 
 ### 安装步骤
 
-1. **克隆项目**
+#### 方法1：使用虚拟环境（推荐）
+
+**Windows开发环境：**
 ```bash
-git clone https://github.com/yourusername/django-oj-system.git
-cd django-oj-system
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
+setup-dev.bat  # 自动设置开发环境
 ```
 
-2. **安装依赖**
+**Linux服务器部署：**
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
+chmod +x deploy-linux.sh
+./deploy-linux.sh  # 自动部署到生产环境
 ```
 
-3. **数据库迁移**
+**手动安装：**
 ```bash
+# 1. 克隆项目
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
+
+# 2. 创建虚拟环境
+python -m venv venv
+
+# 3. 激活虚拟环境
+# Windows:
+venv\Scripts\activate
+# Linux/Mac:
+source venv/bin/activate
+
+# 4. 安装依赖
+pip install -r requirements.txt  # 基础依赖
+# 或
+pip install -r requirements-linux.txt  # 生产环境依赖
+
+# 5. 数据库迁移
 python manage.py migrate
-```
 
-4. **创建超级用户**
-```bash
+# 6. 创建超级用户
 python manage.py createsuperuser
-```
 
-5. **创建默认模板**
-```bash
+# 7. 创建默认模板
 python manage.py create_default_templates
+
+# 8. 启动服务
+python manage.py runserver
 ```
 
-6. **启动服务**
+#### 方法2：使用Docker（一键部署）
+
 ```bash
-python manage.py runserver
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
+docker-compose up -d
 ```
 
 访问 `http://localhost:8000` 即可使用系统。
