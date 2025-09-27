@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}个人资料 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" class="rounded-circle mb-3" width="150" height="150" alt="头像">
+                {% else %}
+                    <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-3x"></i>
+                    </div>
+                {% endif %}
+                <h4>{{ user.username }}</h4>
+                {% if user.nickname %}
+                    <p class="text-muted">{{ user.nickname }}</p>
+                {% endif %}
+                <div class="row text-center mt-3">
+                    <div class="col-4">
+                        <h5 class="text-primary">{{ user.total_submissions }}</h5>
+                        <small class="text-muted">总提交</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="text-success">{{ user.accepted_submissions }}</h5>
+                        <small class="text-muted">通过</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="text-warning">{{ user.rating }}</h5>
+                        <small class="text-muted">积分</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">个人信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>用户名:</strong></div>
+                    <div class="col-sm-9">{{ user.username }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>邮箱:</strong></div>
+                    <div class="col-sm-9">{{ user.email }}</div>
+                </div>
+                {% if user.nickname %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>昵称:</strong></div>
+                    <div class="col-sm-9">{{ user.nickname }}</div>
+                </div>
+                {% endif %}
+                {% if user.school %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>学校:</strong></div>
+                    <div class="col-sm-9">{{ user.school }}</div>
+                </div>
+                {% endif %}
+                {% if user.student_id %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>学号:</strong></div>
+                    <div class="col-sm-9">{{ user.student_id }}</div>
+                </div>
+                {% endif %}
+                {% if user.bio %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>个人简介:</strong></div>
+                    <div class="col-sm-9">{{ user.bio }}</div>
+                </div>
+                {% endif %}
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>注册时间:</strong></div>
+                    <div class="col-sm-9">{{ user.date_joined|date:"Y-m-d H:i" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>通过率:</strong></div>
+                    <div class="col-sm-9">{{ user.acceptance_rate }}%</div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="{% url 'profile_edit' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> 编辑资料
+                    </a>
+                    <a href="{% url 'password_change' %}" class="btn btn-outline-warning">
+                        <i class="fas fa-key"></i> 修改密码
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

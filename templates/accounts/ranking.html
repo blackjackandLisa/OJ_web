@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}排行榜 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy"></i> 用户排行榜
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                {% if rankings %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="80">排名</th>
+                                    <th>用户</th>
+                                    <th width="120">积分</th>
+                                    <th width="120">解决题目</th>
+                                    <th width="120">通过率</th>
+                                    <th width="150">最后更新</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ranking in rankings %}
+                                <tr>
+                                    <td>
+                                        {% if ranking.rank == 1 %}
+                                            <i class="fas fa-medal text-warning"></i>
+                                        {% elif ranking.rank == 2 %}
+                                            <i class="fas fa-medal text-secondary"></i>
+                                        {% elif ranking.rank == 3 %}
+                                            <i class="fas fa-medal text-warning"></i>
+                                        {% else %}
+                                            <span class="badge bg-primary">{{ ranking.rank }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if ranking.user.avatar %}
+                                                <img src="{{ ranking.user.avatar.url }}" class="rounded-circle me-2" width="32" height="32" alt="头像">
+                                            {% else %}
+                                                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ ranking.user.username }}</strong>
+                                                {% if ranking.user.nickname %}
+                                                    <br><small class="text-muted">{{ ranking.user.nickname }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">{{ ranking.rating }}</span>
+                                    </td>
+                                    <td>{{ ranking.solved_count }}</td>
+                                    <td>
+                                        {% if ranking.user.acceptance_rate > 0 %}
+                                            {{ ranking.user.acceptance_rate }}%
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ ranking.updated_at|date:"Y-m-d H:i" }}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">暂无排行榜数据</h5>
+                        <p class="text-muted">用户开始提交代码后，排行榜将自动更新</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

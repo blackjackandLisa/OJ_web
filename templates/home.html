@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}首页 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 欢迎信息 -->
+        <div class="jumbotron bg-primary text-white p-5 rounded mb-4">
+            <h1 class="display-4">
+                <i class="fas fa-code"></i> 欢迎来到OJ系统
+            </h1>
+            <p class="lead">一个功能完整的在线判题系统，支持多种编程语言，提供丰富的算法题目和竞赛功能。</p>
+            {% if not user.is_authenticated %}
+                <a class="btn btn-light btn-lg" href="{% url 'register' %}" role="button">
+                    <i class="fas fa-user-plus"></i> 立即注册
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- 最新题目 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-star"></i> 最新题目
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card problem-card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <a href="#" class="text-decoration-none">A + B Problem</a>
+                                    <span class="badge bg-success ms-2">简单</span>
+                                </h6>
+                                <p class="card-text text-muted small">计算两个整数的和</p>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">通过率: 85%</small>
+                                    <small class="text-muted">提交: 1234</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card problem-card mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <a href="#" class="text-decoration-none">最长公共子序列</a>
+                                    <span class="badge bg-warning ms-2">中等</span>
+                                </h6>
+                                <p class="card-text text-muted small">动态规划经典问题</p>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">通过率: 45%</small>
+                                    <small class="text-muted">提交: 567</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'problem_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-list"></i> 查看所有题目
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 用户统计 -->
+        {% if user.is_authenticated %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar"></i> 我的统计
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary">{{ user.total_submissions }}</h4>
+                        <small class="text-muted">总提交</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-success">{{ user.accepted_submissions }}</h4>
+                        <small class="text-muted">通过</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h5 class="text-warning">{{ user.rating }}</h5>
+                    <small class="text-muted">积分</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 最新竞赛 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy"></i> 最新竞赛
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <a href="#" class="text-decoration-none">算法竞赛 #1</a>
+                            <span class="badge bg-info ms-2">进行中</span>
+                        </h6>
+                        <p class="card-text text-muted small">2024年春季算法竞赛</p>
+                        <small class="text-muted">参与人数: 156</small>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'contest_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-trophy"></i> 查看所有竞赛
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 排行榜 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-crown"></i> 排行榜
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-medal text-warning"></i>
+                            <strong>user1</strong>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">2500</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-medal text-secondary"></i>
+                            <strong>user2</strong>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">2400</span>
+                    </div>
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-medal text-warning"></i>
+                            <strong>user3</strong>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">2300</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

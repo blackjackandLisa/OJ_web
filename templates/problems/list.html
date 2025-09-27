@@ -1,0 +1,317 @@
+{% extends 'base.html' %}
+{% load problem_extras %}
+
+{% block title %}题目列表 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <!-- 筛选器 -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">筛选条件</h6>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label class="form-label">难度</label>
+                        <select name="difficulty" class="form-select">
+                            <option value="">全部</option>
+                            <option value="easy" {% if current_difficulty == 'easy' %}selected{% endif %}>简单</option>
+                            <option value="medium" {% if current_difficulty == 'medium' %}selected{% endif %}>中等</option>
+                            <option value="hard" {% if current_difficulty == 'hard' %}selected{% endif %}>困难</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">分类</label>
+                        <select name="category" class="form-select">
+                            <option value="">全部</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}" {% if current_category == category.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">标签</label>
+                        <select name="tag" class="form-select">
+                            <option value="">全部</option>
+                            {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if current_tag == tag.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ tag.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">筛选</button>
+                        <a href="{% url 'problem_list' %}" class="btn btn-outline-secondary">重置</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
+        <!-- 搜索框 -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" class="form-control" id="searchInput" 
+                                   placeholder="搜索题目标题或ID..." 
+                                   value="{{ search_query|default:'' }}">
+                            <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-end">
+                            {% if user.is_authenticated %}
+                                <div class="mb-1">
+                                    <small class="text-muted">
+                                        <i class="fas fa-check-circle text-success me-1"></i>已通过
+                                        <i class="fas fa-exclamation-circle text-warning me-1 ms-2"></i>已尝试
+                                        <i class="fas fa-circle text-muted me-1 ms-2" style="font-size: 0.7em;"></i>未尝试
+                                    </small>
+                                </div>
+                            {% endif %}
+                            <small class="text-muted" id="searchResultCount">
+                                找到 <span id="resultCount">{{ problems.count }}</span> 题
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 题目列表 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">题目列表</h5>
+                <span class="badge bg-primary" id="totalCount">{{ problems.count }} 题</span>
+            </div>
+            <div class="card-body p-0">
+                {% if problems %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>题号</th>
+                                    <th>标题</th>
+                                    <th>难度</th>
+                                    <th>分类</th>
+                                    <th>通过率</th>
+                                    <th>提交数</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for problem in problems %}
+                                <tr>
+                                    <td>{{ problem.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if user.is_authenticated %}
+                                                {% with status=problem_status|get_item:problem.id %}
+                                                    {% if status == 'accepted' %}
+                                                        <i class="fas fa-check-circle text-success me-2" title="已通过"></i>
+                                                    {% elif status == 'attempted' %}
+                                                        <i class="fas fa-exclamation-circle text-warning me-2" title="已尝试"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-circle text-muted me-2" title="未尝试" style="font-size: 0.8em;"></i>
+                                                    {% endif %}
+                                                {% endwith %}
+                                            {% endif %}
+                                            <a href="{% url 'problem_detail' problem.id %}" class="text-decoration-none">
+                                                {{ problem.title }}
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if problem.difficulty == 'easy' %}bg-success
+                                            {% elif problem.difficulty == 'medium' %}bg-warning
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ problem.get_difficulty_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if problem.category %}
+                                            <span class="badge bg-info">{{ problem.category.name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">未分类</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ problem.acceptance_rate }}%</td>
+                                    <td>{{ problem.total_submissions }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">没有找到符合条件的题目</h5>
+                        <p class="text-muted">请尝试调整筛选条件</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const clearButton = document.getElementById('clearSearch');
+    const resultCount = document.getElementById('resultCount');
+    const tableBody = document.querySelector('tbody');
+    const noResultsMessage = document.querySelector('.text-center.py-5');
+    
+    let allRows = [];
+    let searchTimeout;
+    
+    // 初始化：保存所有行
+    function initializeSearch() {
+        if (tableBody) {
+            allRows = Array.from(tableBody.querySelectorAll('tr'));
+        }
+    }
+    
+    // 执行搜索
+    function performSearch(query) {
+        query = query.toLowerCase().trim();
+        
+        if (!query) {
+            showAllRows();
+            return;
+        }
+        
+        let visibleCount = 0;
+        
+        allRows.forEach(row => {
+            const title = row.querySelector('td:nth-child(2) a').textContent.toLowerCase();
+            const id = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+            
+            if (title.includes(query) || id.includes(query)) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        updateResultCount(visibleCount);
+        
+        // 显示/隐藏无结果提示
+        if (tableBody) {
+            if (visibleCount === 0) {
+                showNoResults(query);
+            } else {
+                hideNoResults();
+            }
+        }
+    }
+    
+    // 显示所有行
+    function showAllRows() {
+        allRows.forEach(row => {
+            row.style.display = '';
+        });
+        updateResultCount(allRows.length);
+        hideNoResults();
+    }
+    
+    // 更新结果计数
+    function updateResultCount(count) {
+        if (resultCount) {
+            resultCount.textContent = count;
+        }
+    }
+    
+    // 显示无结果提示
+    function showNoResults(query) {
+        if (tableBody) {
+            tableBody.style.display = 'none';
+        }
+        
+        let noResultsDiv = document.getElementById('noSearchResults');
+        if (!noResultsDiv) {
+            noResultsDiv = document.createElement('div');
+            noResultsDiv.id = 'noSearchResults';
+            noResultsDiv.className = 'text-center py-5';
+            noResultsDiv.innerHTML = `
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">没有找到相关题目</h5>
+                <p class="text-muted">搜索"${query}"没有找到匹配的题目</p>
+                <button class="btn btn-outline-primary" onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').dispatchEvent(new Event('input'));">
+                    <i class="fas fa-undo"></i> 清除搜索
+                </button>
+            `;
+            
+            const cardBody = document.querySelector('.card-body.p-0');
+            cardBody.appendChild(noResultsDiv);
+        }
+        
+        noResultsDiv.style.display = 'block';
+    }
+    
+    // 隐藏无结果提示
+    function hideNoResults() {
+        if (tableBody) {
+            tableBody.style.display = '';
+        }
+        
+        const noResultsDiv = document.getElementById('noSearchResults');
+        if (noResultsDiv) {
+            noResultsDiv.style.display = 'none';
+        }
+    }
+    
+    // 事件监听
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performSearch(this.value);
+            }, 300); // 300ms 防抖
+        });
+        
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                this.value = '';
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    
+    if (clearButton) {
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            searchInput.dispatchEvent(new Event('input'));
+            searchInput.focus();
+        });
+    }
+    
+    // 初始化
+    initializeSearch();
+    
+    // 如果有初始搜索查询，执行搜索
+    if (searchInput && searchInput.value) {
+        performSearch(searchInput.value);
+    }
+});
+</script>
+{% endblock %}

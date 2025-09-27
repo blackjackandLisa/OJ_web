@@ -1,0 +1,474 @@
+{% extends 'base.html' %}
+
+{% block title %}提交记录 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3">
+        <!-- 筛选器 -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">筛选条件</h6>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label class="form-label">状态</label>
+                        <select name="status" class="form-select">
+                            <option value="">全部</option>
+                            <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>等待中</option>
+                            <option value="judging" {% if current_status == 'judging' %}selected{% endif %}>评测中</option>
+                            <option value="accepted" {% if current_status == 'accepted' %}selected{% endif %}>通过</option>
+                            <option value="wrong_answer" {% if current_status == 'wrong_answer' %}selected{% endif %}>答案错误</option>
+                            <option value="time_limit_exceeded" {% if current_status == 'time_limit_exceeded' %}selected{% endif %}>超时</option>
+                            <option value="memory_limit_exceeded" {% if current_status == 'memory_limit_exceeded' %}selected{% endif %}>内存超限</option>
+                            <option value="runtime_error" {% if current_status == 'runtime_error' %}selected{% endif %}>运行时错误</option>
+                            <option value="compile_error" {% if current_status == 'compile_error' %}selected{% endif %}>编译错误</option>
+                            <option value="system_error" {% if current_status == 'system_error' %}selected{% endif %}>系统错误</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">语言</label>
+                        <select name="language" class="form-select">
+                            <option value="">全部</option>
+                            <option value="python" {% if current_language == 'python' %}selected{% endif %}>Python</option>
+                            <option value="cpp" {% if current_language == 'cpp' %}selected{% endif %}>C++</option>
+                            <option value="java" {% if current_language == 'java' %}selected{% endif %}>Java</option>
+                            <option value="javascript" {% if current_language == 'javascript' %}selected{% endif %}>JavaScript</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">筛选</button>
+                        <a href="{% url 'submission_list' %}" class="btn btn-outline-secondary">重置</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-9">
+        <!-- 提交记录列表 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">提交记录</h5>
+                <span class="badge bg-primary">{{ submissions.count }} 条</span>
+            </div>
+            <div class="card-body p-0">
+                {% if submissions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>题目</th>
+                                    <th>用户</th>
+                                    <th>语言</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>内存</th>
+                                    <th>提交时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in submissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'submission_detail' submission.id %}" class="text-decoration-none">
+                                            #{{ submission.id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'problem_detail' submission.problem.id %}" class="text-decoration-none">
+                                            {{ submission.problem.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ submission.user.username }}</td>
+                                    <td>{{ submission.get_language_display }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if submission.status == 'accepted' %}bg-success
+                                            {% elif submission.status == 'wrong_answer' %}bg-danger
+                                            {% elif submission.status == 'time_limit_exceeded' %}bg-warning
+                                            {% elif submission.status == 'memory_limit_exceeded' %}bg-info
+                                            {% elif submission.status == 'runtime_error' %}bg-danger
+                                            {% elif submission.status == 'compile_error' %}bg-secondary
+                                            {% elif submission.status == 'system_error' %}bg-dark
+                                            {% else %}bg-primary{% endif %}">
+                                            {{ submission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if submission.time_used %}
+                                            {{ submission.time_used }}ms
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.memory_used %}
+                                            {{ submission.memory_used }}KB
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ submission.created_at|date:"Y-m-d H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" 
+                                                onclick="viewCode({{ submission.id }}, '{{ submission.get_language_display }}', '{{ submission.problem.title|escapejs }}')"
+                                                title="查看代码">
+                                            <i class="fas fa-code"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">暂无提交记录</h5>
+                        <p class="text-muted">开始提交代码后，记录将显示在这里</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 代码查看模态框 -->
+<div class="modal fade" id="codeViewModal" tabindex="-1" aria-labelledby="codeViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="codeViewModalLabel">
+                    <i class="fas fa-code"></i> 代码查看
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>提交ID:</strong> <span id="modalSubmissionId"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>编程语言:</strong> <span id="modalLanguage"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>题目:</strong> <span id="modalProblemTitle"></span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">代码内容:</h6>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="copyCodeBtn">
+                                    <i class="fas fa-copy"></i> 复制代码
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" id="downloadCodeBtn">
+                                    <i class="fas fa-download"></i> 下载代码
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div id="codeContainer" style="border: 1px solid #ddd; border-radius: 4px; min-height: 300px;">
+                            <div class="d-flex justify-content-center align-items-center" style="height: 300px;" id="loadingSpinner">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                            </div>
+                            <textarea id="codeTextarea" style="display: none;"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let codeEditor;
+let currentSubmissionData = {};
+
+// 查看代码函数
+function viewCode(submissionId, language, problemTitle) {
+    // 设置模态框基本信息
+    document.getElementById('modalSubmissionId').textContent = `#${submissionId}`;
+    document.getElementById('modalLanguage').textContent = language;
+    document.getElementById('modalProblemTitle').textContent = problemTitle;
+    
+    // 保存当前提交数据
+    currentSubmissionData = {
+        id: submissionId,
+        language: language,
+        problemTitle: problemTitle
+    };
+    
+    // 显示加载状态
+    showLoading();
+    
+    // 显示模态框
+    const modal = new bootstrap.Modal(document.getElementById('codeViewModal'));
+    modal.show();
+    
+    // 获取代码内容
+    fetchSubmissionCode(submissionId);
+}
+
+// 显示加载状态
+function showLoading() {
+    document.getElementById('loadingSpinner').style.display = 'flex';
+    document.getElementById('codeTextarea').style.display = 'none';
+    
+    // 如果有编辑器，销毁它
+    if (codeEditor) {
+        codeEditor.toTextArea();
+        codeEditor = null;
+    }
+}
+
+// 获取提交代码
+function fetchSubmissionCode(submissionId) {
+    fetch(`/api/submissions/${submissionId}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('网络请求失败');
+            }
+            return response.json();
+        })
+        .then(data => {
+            displayCode(data.code, data.language);
+        })
+        .catch(error => {
+            console.error('获取代码失败:', error);
+            showError('获取代码失败，请稍后重试');
+        });
+}
+
+// 显示代码
+function displayCode(code, language) {
+    // 隐藏加载状态
+    document.getElementById('loadingSpinner').style.display = 'none';
+    
+    const textarea = document.getElementById('codeTextarea');
+    textarea.value = code;
+    textarea.style.display = 'block';
+    
+    // 如果CodeMirror可用，创建编辑器
+    if (window.CodeMirror) {
+        try {
+            // 确定语言模式
+            let mode;
+            switch(language.toLowerCase()) {
+                case 'python':
+                    mode = 'python';
+                    break;
+                case 'c++':
+                    mode = 'text/x-c++src';
+                    break;
+                case 'java':
+                    mode = 'text/x-java';
+                    break;
+                case 'javascript':
+                    mode = 'javascript';
+                    break;
+                default:
+                    mode = 'text/plain';
+            }
+            
+            codeEditor = CodeMirror.fromTextArea(textarea, {
+                lineNumbers: true,
+                mode: mode,
+                theme: localStorage.getItem('editorTheme') || 'default',
+                readOnly: true,
+                lineWrapping: true,
+                styleActiveLine: false
+            });
+            
+            // 设置编辑器高度
+            codeEditor.setSize(null, 400);
+            
+        } catch (error) {
+            console.error('CodeMirror初始化失败:', error);
+            // 降级到普通textarea
+            textarea.style.height = '400px';
+            textarea.style.fontFamily = 'monospace';
+            textarea.readOnly = true;
+        }
+    } else {
+        // 如果没有CodeMirror，使用普通textarea
+        textarea.style.height = '400px';
+        textarea.style.fontFamily = 'monospace';
+        textarea.readOnly = true;
+    }
+    
+    // 保存代码到全局变量
+    currentSubmissionData.code = code;
+}
+
+// 显示错误
+function showError(message) {
+    document.getElementById('loadingSpinner').style.display = 'none';
+    document.getElementById('codeContainer').innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="height: 300px;">
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                <h5 class="text-muted">加载失败</h5>
+                <p class="text-muted">${message}</p>
+                <button class="btn btn-primary" onclick="fetchSubmissionCode(${currentSubmissionData.id})">
+                    <i class="fas fa-redo"></i> 重试
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// 复制代码
+function copyCode() {
+    const code = currentSubmissionData.code || '';
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        // 现代浏览器的Clipboard API
+        navigator.clipboard.writeText(code).then(() => {
+            showCopySuccess();
+        }).catch(err => {
+            console.error('复制失败:', err);
+            fallbackCopy(code);
+        });
+    } else {
+        // 降级方案
+        fallbackCopy(code);
+    }
+}
+
+// 降级复制方案
+function fallbackCopy(text) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    
+    try {
+        document.execCommand('copy');
+        showCopySuccess();
+    } catch (err) {
+        console.error('复制失败:', err);
+        alert('复制失败，请手动选择复制');
+    }
+    
+    document.body.removeChild(textarea);
+}
+
+// 显示复制成功提示
+function showCopySuccess() {
+    const btn = document.getElementById('copyCodeBtn');
+    const originalHTML = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-check text-success"></i> 已复制';
+    btn.disabled = true;
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }, 2000);
+}
+
+// 下载代码
+function downloadCode() {
+    const code = currentSubmissionData.code || '';
+    const language = currentSubmissionData.language || 'txt';
+    const submissionId = currentSubmissionData.id || 'unknown';
+    
+    // 确定文件扩展名
+    let extension;
+    switch(language.toLowerCase()) {
+        case 'python':
+            extension = 'py';
+            break;
+        case 'c++':
+            extension = 'cpp';
+            break;
+        case 'java':
+            extension = 'java';
+            break;
+        case 'javascript':
+            extension = 'js';
+            break;
+        default:
+            extension = 'txt';
+    }
+    
+    const filename = `submission_${submissionId}.${extension}`;
+    
+    // 创建下载链接
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    // 显示下载提示
+    const btn = document.getElementById('downloadCodeBtn');
+    const originalHTML = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-check text-success"></i> 已下载';
+    btn.disabled = true;
+    
+    setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.disabled = false;
+    }, 2000);
+}
+
+// 事件监听
+document.addEventListener('DOMContentLoaded', function() {
+    // 复制按钮事件
+    document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
+    
+    // 下载按钮事件
+    document.getElementById('downloadCodeBtn').addEventListener('click', downloadCode);
+    
+    // 模态框关闭时清理编辑器
+    document.getElementById('codeViewModal').addEventListener('hidden.bs.modal', function() {
+        if (codeEditor) {
+            codeEditor.toTextArea();
+            codeEditor = null;
+        }
+        
+        // 重置容器
+        const container = document.getElementById('codeContainer');
+        container.innerHTML = `
+            <div class="d-flex justify-content-center align-items-center" style="height: 300px;" id="loadingSpinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+            </div>
+            <textarea id="codeTextarea" style="display: none;"></textarea>
+        `;
+        
+        // 清空数据
+        currentSubmissionData = {};
+    });
+});
+</script>
+{% endblock %}

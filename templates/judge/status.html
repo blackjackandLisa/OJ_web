@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}判题状态 - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">我的提交记录</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if user_submissions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>题目</th>
+                                    <th>语言</th>
+                                    <th>状态</th>
+                                    <th>时间</th>
+                                    <th>内存</th>
+                                    <th>得分</th>
+                                    <th>提交时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in user_submissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'submission_detail' submission.id %}" class="text-decoration-none">
+                                            #{{ submission.id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'problem_detail' submission.problem.id %}" class="text-decoration-none">
+                                            {{ submission.problem.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ submission.get_language_display }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if submission.status == 'accepted' %}bg-success
+                                            {% elif submission.status == 'wrong_answer' %}bg-danger
+                                            {% elif submission.status == 'time_limit_exceeded' %}bg-warning
+                                            {% elif submission.status == 'memory_limit_exceeded' %}bg-info
+                                            {% elif submission.status == 'runtime_error' %}bg-danger
+                                            {% elif submission.status == 'compile_error' %}bg-secondary
+                                            {% elif submission.status == 'system_error' %}bg-dark
+                                            {% elif submission.status == 'judging' %}bg-primary
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ submission.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if submission.time_used %}
+                                            {{ submission.time_used }}ms
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if submission.memory_used %}
+                                            {{ submission.memory_used }}KB
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ submission.score }}</td>
+                                    <td>
+                                        <small class="text-muted">{{ submission.created_at|date:"Y-m-d H:i:s" }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'submission_detail' submission.id %}" class="btn btn-sm btn-outline-primary">
+                                            查看详情
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">暂无提交记录</h5>
+                        <p class="text-muted">开始提交代码后，记录将显示在这里</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        {% if queue_status %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">队列状态</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-2">
+                            <h4 class="text-warning mb-1">{{ queue_status.pending }}</h4>
+                            <small class="text-muted">等待中</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="border rounded p-2">
+                            <h4 class="text-primary mb-1">{{ queue_status.processing }}</h4>
+                            <small class="text-muted">评测中</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2">
+                            <h4 class="text-success mb-1">{{ queue_status.completed }}</h4>
+                            <small class="text-muted">已完成</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2">
+                            <h4 class="text-danger mb-1">{{ queue_status.failed }}</h4>
+                            <small class="text-muted">失败</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">快速操作</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'problem_list' %}" class="btn btn-primary">
+                        <i class="fas fa-list"></i> 浏览题目
+                    </a>
+                    <a href="{% url 'submission_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-history"></i> 所有提交
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 自动刷新页面（每30秒）
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

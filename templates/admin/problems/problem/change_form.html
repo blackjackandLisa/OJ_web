@@ -1,0 +1,22 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- 只加载必要的JavaScript，避免CSS冲突 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="{% static 'admin/css/markdown_import.css' %}">
+<script src="{% static 'admin/js/markdown_import.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="markdown-import-container">
+    <button type="button" class="default" id="markdown-import-btn">
+        <i class="fas fa-file-import"></i> 从Markdown导入
+    </button>
+</div>
+{{ block.super }}
+{% endblock %}

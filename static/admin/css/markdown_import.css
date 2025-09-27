@@ -1,0 +1,228 @@
+/* Markdown导入功能样式 - 保持Django admin原始样式 */
+
+#markdown-import-btn {
+    margin-bottom: 20px;
+}
+
+#markdown-import-btn i {
+    margin-right: 5px;
+}
+
+/* 确保不影响Django admin的原始样式 */
+#markdown-import-container {
+    margin-bottom: 20px;
+}
+
+/* 重置可能影响admin样式的规则 */
+#markdown-import-container * {
+    box-sizing: content-box;
+}
+
+/* 模态框样式调整 - 移除蓝色主题 */
+#markdownImportModal .modal-header {
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #ddd;
+}
+
+#markdownImportModal .modal-title {
+    color: #333;
+    font-weight: normal;
+}
+
+#markdownImportModal .modal-body {
+    padding: 20px;
+}
+
+#markdownImportModal .form-group label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+#markdownImportModal .form-control {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+#markdownImportModal .btn-primary {
+    background-color: #417690;
+    border-color: #417690;
+}
+
+#markdownImportModal .btn-primary:hover {
+    background-color: #205067;
+    border-color: #205067;
+}
+
+#markdownImportModal .btn-success {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+#markdownImportModal .btn-success:hover {
+    background-color: #449d44;
+    border-color: #398439;
+}
+
+/* 解析结果预览样式 */
+#parseResult {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+    margin-top: 15px;
+}
+
+#previewContent {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 15px;
+    font-size: 13px;
+}
+
+#previewContent h6 {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+#previewContent p {
+    margin-bottom: 8px;
+    color: #666;
+}
+
+#previewContent strong {
+    color: #333;
+    font-weight: bold;
+}
+
+/* 模态框样式 */
+#markdownImportModal .modal-dialog {
+    max-width: 900px;
+}
+
+#markdownImportModal .modal-body {
+    padding: 20px;
+}
+
+#markdownText {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.4;
+    resize: vertical;
+}
+
+/* 解析结果预览 */
+#parseResult {
+    border-top: 1px solid #dee2e6;
+    padding-top: 15px;
+}
+
+#previewContent {
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+#previewContent h6 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 5px;
+}
+
+#previewContent p {
+    margin-bottom: 8px;
+    color: #6c757d;
+}
+
+#previewContent strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+/* 按钮样式 */
+#parseMarkdownBtn, #applyMarkdownBtn {
+    min-width: 80px;
+}
+
+#applyMarkdownBtn {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+#applyMarkdownBtn:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    #markdownImportModal .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    #markdownText {
+        font-size: 12px;
+    }
+    
+    #previewContent {
+        font-size: 12px;
+    }
+}
+
+/* 加载状态 */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* 表单字段高亮 */
+.field-highlight {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+    transition: all 0.3s ease;
+}
+
+/* 测试用例样式 */
+.test-case-preview {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+    margin: 5px 0;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.test-case-preview .input-label {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.test-case-preview .output-label {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* 错误提示样式 */
+.alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+/* 成功提示样式 */
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+}

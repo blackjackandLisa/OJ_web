@@ -1,0 +1,314 @@
+{% extends 'base.html' %}
+
+{% block title %}提交详情 #{{ submission.id }} - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">提交详情 #{{ submission.id }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>题目:</strong></div>
+                    <div class="col-sm-9">
+                        <a href="{% url 'problem_detail' submission.problem.id %}" class="text-decoration-none">
+                            {{ submission.problem.title }}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>用户:</strong></div>
+                    <div class="col-sm-9">{{ submission.user.username }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>语言:</strong></div>
+                    <div class="col-sm-9">{{ submission.get_language_display }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>状态:</strong></div>
+                    <div class="col-sm-9 d-flex align-items-center gap-2">
+                        <span id="submission-status-badge" class="badge 
+                            {% if submission.status == 'accepted' %}bg-success
+                            {% elif submission.status == 'wrong_answer' %}bg-danger
+                            {% elif submission.status == 'time_limit_exceeded' %}bg-warning
+                            {% elif submission.status == 'memory_limit_exceeded' %}bg-info
+                            {% elif submission.status == 'runtime_error' %}bg-danger
+                            {% elif submission.status == 'compile_error' %}bg-secondary
+                            {% elif submission.status == 'system_error' %}bg-dark
+                            {% else %}bg-primary{% endif %}">
+                            <span id="submission-status-text" data-status-finished="{% if submission.status == 'pending' or submission.status == 'judging' %}false{% else %}true{% endif %}">
+                                {{ submission.get_status_display }}
+                            </span>
+                        </span>
+                        <div id="submission-status-spinner" class="spinner-border spinner-border-sm text-primary {% if submission.status != 'pending' and submission.status != 'judging' %}d-none{% endif %}" role="status">
+                            <span class="visually-hidden">判题中</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="submission-polling-notice" class="text-muted small ms-sm-3 d-none">正在刷新评测状态…</div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>运行时间:</strong></div>
+                    <div class="col-sm-9">
+                        {% if submission.time_used %}
+                            <span id="submission-time-used">{{ submission.time_used }}ms</span>
+                        {% else %}
+                            <span id="submission-time-used">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>内存使用:</strong></div>
+                    <div class="col-sm-9">
+                        {% if submission.memory_used %}
+                            <span id="submission-memory-used">{{ submission.memory_used }}KB</span>
+                        {% else %}
+                            <span id="submission-memory-used">-</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>得分:</strong></div>
+                    <div class="col-sm-9"><span id="submission-score">{{ submission.score }}</span></div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>提交时间:</strong></div>
+                    <div class="col-sm-9">{{ submission.created_at|date:"Y-m-d H:i:s" }}</div>
+                </div>
+                
+                <div class="row mb-3 {% if not submission.error_message %}d-none{% endif %}" id="submission-error">
+                    <div class="col-sm-3"><strong>错误信息:</strong></div>
+                    <div class="col-sm-9">
+                        <div class="alert alert-danger">
+                            <pre class="mb-0" id="submission-error-text">{{ submission.error_message }}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="submission-test-results" class="row mb-3 {% if not submission.test_results %}d-none{% endif %}">
+                    <div class="col-sm-3"><strong>测试结果:</strong></div>
+                    <div class="col-sm-9">
+                        <div class="accordion" id="testResultsAccordion">
+                            {% for test_result in submission.test_results %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                                    <button class="accordion-button {% if test_result.status != 'accepted' %}collapsed{% endif %}" 
+                                            type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapse{{ forloop.counter }}" 
+                                            aria-expanded="{% if test_result.status == 'accepted' %}true{% else %}false{% endif %}" 
+                                            aria-controls="collapse{{ forloop.counter }}">
+                                        测试用例 {{ forloop.counter }} -
+                                        <span class="ms-2 badge 
+                                            {% if test_result.status == 'accepted' %}bg-success
+                                            {% elif test_result.status == 'wrong_answer' %}bg-danger
+                                            {% elif test_result.status == 'time_limit_exceeded' %}bg-warning
+                                            {% elif test_result.status == 'memory_limit_exceeded' %}bg-info
+                                            {% elif test_result.status == 'runtime_error' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ test_result.status }}
+                                        </span>
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ forloop.counter }}" 
+                                     class="accordion-collapse collapse {% if test_result.status == 'accepted' %}show{% endif %}" 
+                                     aria-labelledby="heading{{ forloop.counter }}" 
+                                     data-bs-parent="#testResultsAccordion">
+                                    <div class="accordion-body">
+                                        <h6>输入:</h6>
+                                        <pre class="bg-light p-2 rounded"><code>{{ test_result.input }}</code></pre>
+                                        <h6>期望输出:</h6>
+                                        <pre class="bg-light p-2 rounded"><code>{{ test_result.expected_output }}</code></pre>
+                                        <h6>实际输出:</h6>
+                                        <pre class="bg-light p-2 rounded"><code>{{ test_result.actual_output }}</code></pre>
+                                        {% if test_result.error %}
+                                        <h6>错误信息:</h6>
+                                        <pre class="bg-light p-2 rounded text-danger"><code>{{ test_result.error }}</code></pre>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div id="submission-no-results" class="row mb-3 {% if submission.test_results %}d-none{% endif %}">
+                    <div class="col-sm-3"><strong>测试结果:</strong></div>
+                    <div class="col-sm-9 text-muted">暂无测试数据。</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">提交代码</h6>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded"><code>{{ submission.code }}</code></pre>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'submission_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回列表
+                    </a>
+                    {% if user.is_authenticated and user == submission.user %}
+                    <a href="{% url 'problem_submit' submission.problem.id %}" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> 重新提交
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    const statusTextElem = document.getElementById('submission-status-text');
+    const statusBadgeElem = document.getElementById('submission-status-badge');
+    const spinnerElem = document.getElementById('submission-status-spinner');
+    const noticeElem = document.getElementById('submission-polling-notice');
+    const timeElem = document.getElementById('submission-time-used');
+    const memoryElem = document.getElementById('submission-memory-used');
+    const scoreElem = document.getElementById('submission-score');
+    const errorContainer = document.getElementById('submission-error');
+    const errorText = document.getElementById('submission-error-text');
+    const testResultsWrapper = document.getElementById('submission-test-results');
+    const noResultsElem = document.getElementById('submission-no-results');
+
+    if (!statusTextElem || !statusBadgeElem) {
+        return;
+    }
+
+    const statusUrl = "{% url 'submission_status_api' submission.id %}";
+    const isFinished = statusTextElem.dataset.statusFinished === 'true';
+
+    if (isFinished) {
+        if (noticeElem) {
+            noticeElem.classList.add('d-none');
+        }
+        return;
+    }
+
+    if (noticeElem) {
+        noticeElem.classList.remove('d-none');
+        noticeElem.textContent = '正在刷新评测状态…';
+    }
+
+    const updateDisplay = (data) => {
+        statusTextElem.textContent = data.status_display;
+        statusTextElem.dataset.statusFinished = data.is_finished ? 'true' : 'false';
+        statusBadgeElem.className = 'badge ' + (data.badge_class || 'bg-primary');
+        statusBadgeElem.dataset.status = data.status;
+
+        if (spinnerElem) {
+            if (data.is_finished) {
+                spinnerElem.classList.add('d-none');
+            } else {
+                spinnerElem.classList.remove('d-none');
+            }
+        }
+
+        if (timeElem) {
+            if (data.time_used !== null && data.time_used !== undefined) {
+                timeElem.textContent = `${data.time_used}ms`;
+            } else {
+                timeElem.textContent = '-';
+            }
+        }
+
+        if (memoryElem) {
+            if (data.memory_used !== null && data.memory_used !== undefined) {
+                memoryElem.textContent = `${data.memory_used}KB`;
+            } else {
+                memoryElem.textContent = '-';
+            }
+        }
+
+        if (scoreElem) {
+            scoreElem.textContent = data.score != null ? data.score : 0;
+        }
+
+        if (errorContainer && errorText) {
+            if (data.error_message) {
+                errorContainer.classList.remove('d-none');
+                errorText.textContent = data.error_message;
+            } else {
+                errorContainer.classList.add('d-none');
+                errorText.textContent = '';
+            }
+        }
+
+        if (data.test_results && data.test_results.length > 0) {
+            if (testResultsWrapper) {
+                // 简单处理：评测完成后刷新页面以展示完整测试结果
+                if (!data.is_finished) {
+                    testResultsWrapper.classList.remove('d-none');
+                }
+            }
+            if (noResultsElem) {
+                noResultsElem.classList.add('d-none');
+            }
+        } else if (noResultsElem) {
+            noResultsElem.classList.remove('d-none');
+        }
+
+        if (noticeElem) {
+            noticeElem.textContent = data.is_finished ? '评测已完成，正在刷新页面…' : '正在刷新评测状态…';
+        }
+
+        if (data.is_finished) {
+            setTimeout(() => {
+                window.location.reload();
+            }, 800);
+        }
+    };
+
+    const poll = () => {
+        fetch(statusUrl, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateDisplay(data);
+                if (data.is_finished) {
+                    clearInterval(pollTimer);
+                }
+            })
+            .catch(err => {
+                console.error('轮询提交状态失败:', err);
+                if (noticeElem) {
+                    noticeElem.textContent = '无法获取最新评测状态，请稍后手动刷新。';
+                }
+                clearInterval(pollTimer);
+            });
+    };
+
+    const pollTimer = setInterval(poll, 3000);
+    poll();
+})();
+</script>
+{% endblock %}

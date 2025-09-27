@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ problem.title }} - OJ系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 题目信息 -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ problem.title }}</h4>
+                <div>
+                    <span class="badge 
+                        {% if problem.difficulty == 'easy' %}bg-success
+                        {% elif problem.difficulty == 'medium' %}bg-warning
+                        {% else %}bg-danger{% endif %}">
+                        {{ problem.get_difficulty_display }}
+                    </span>
+                    {% if problem.category %}
+                        <span class="badge bg-info">{{ problem.category.name }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- 题目描述 -->
+                <div class="mb-4">
+                    <h6>题目描述</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ problem.description|linebreaks }}
+                    </div>
+                </div>
+                
+                <!-- 输入格式 -->
+                <div class="mb-4">
+                    <h6>输入格式</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ problem.input_format|linebreaks }}
+                    </div>
+                </div>
+                
+                <!-- 输出格式 -->
+                <div class="mb-4">
+                    <h6>输出格式</h6>
+                    <div class="border rounded p-3 bg-light">
+                        {{ problem.output_format|linebreaks }}
+                    </div>
+                </div>
+                
+                <!-- 样例输入 -->
+                <div class="mb-4">
+                    <h6>样例输入</h6>
+                    <pre class="border rounded p-3 bg-dark text-light"><code>{{ problem.sample_input }}</code></pre>
+                </div>
+                
+                <!-- 样例输出 -->
+                <div class="mb-4">
+                    <h6>样例输出</h6>
+                    <pre class="border rounded p-3 bg-dark text-light"><code>{{ problem.sample_output }}</code></pre>
+                </div>
+                
+                <!-- 提示 -->
+                {% if problem.hint %}
+                <div class="mb-4">
+                    <h6>提示</h6>
+                    <div class="border rounded p-3 bg-warning bg-opacity-10">
+                        {{ problem.hint|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- 题目统计 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">题目统计</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5 class="text-primary">{{ problem.total_submissions }}</h5>
+                        <small class="text-muted">总提交</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-success">{{ problem.accepted_submissions }}</h5>
+                        <small class="text-muted">通过</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h5 class="text-warning">{{ problem.acceptance_rate }}%</h5>
+                    <small class="text-muted">通过率</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 限制条件 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">限制条件</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <strong>时间限制:</strong><br>
+                        <span class="text-primary">{{ problem.time_limit }}ms</span>
+                    </div>
+                    <div class="col-6">
+                        <strong>内存限制:</strong><br>
+                        <span class="text-primary">{{ problem.memory_limit }}MB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 操作按钮 -->
+        <div class="card">
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'problem_submit' problem.id %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-code"></i> 提交代码
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-sign-in-alt"></i> 登录后提交
+                    </a>
+                {% endif %}
+                <a href="{% url 'problem_list' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

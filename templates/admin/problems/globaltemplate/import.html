@@ -1,0 +1,326 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}导入模板 - {{ site_title|default:"Django site admin" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-container {
+        max-width: 800px;
+        margin: 20px auto;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .upload-area {
+        border: 2px dashed #007cba;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        margin: 20px 0;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-area:hover {
+        border-color: #005a87;
+        background: #e9ecef;
+    }
+    
+    .upload-area.dragover {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+    
+    .upload-icon {
+        font-size: 3em;
+        color: #007cba;
+        margin-bottom: 15px;
+    }
+    
+    .file-info {
+        background: #e9ecef;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+        display: none;
+    }
+    
+    .format-example {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .format-example h4 {
+        color: #495057;
+        margin-top: 0;
+    }
+    
+    .format-example pre {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        font-size: 0.9em;
+        overflow-x: auto;
+    }
+    
+    .btn-upload {
+        background: #007cba;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 1.1em;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+    
+    .btn-upload:hover {
+        background: #005a87;
+    }
+    
+    .btn-upload:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #e9ecef;
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 15px 0;
+        display: none;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007cba, #005a87);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">首页</a>
+    &rsaquo; <a href="{% url 'admin:problems_globaltemplate_changelist' %}">全局模板</a>
+    &rsaquo; 导入模板
+</div>
+{% endblock %}
+
+{% block content %}
+<h1>导入模板</h1>
+
+<div class="import-container">
+    <form method="post" enctype="multipart/form-data" id="importForm">
+        {% csrf_token %}
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+            </div>
+            <h3>拖拽文件到此处或点击选择文件</h3>
+            <p class="text-muted">支持 JSON 和 CSV 格式</p>
+            <input type="file" name="template_file" id="fileInput" 
+                   accept=".json,.csv" style="display: none;" required>
+            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-folder-open"></i> 选择文件
+            </button>
+        </div>
+        
+        <div class="file-info" id="fileInfo">
+            <h4><i class="fas fa-file"></i> 文件信息</h4>
+            <p><strong>文件名:</strong> <span id="fileName"></span></p>
+            <p><strong>文件大小:</strong> <span id="fileSize"></span></p>
+            <p><strong>文件类型:</strong> <span id="fileType"></span></p>
+        </div>
+        
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="submit" class="btn-upload" id="uploadBtn" disabled>
+                <i class="fas fa-upload"></i> 开始导入
+            </button>
+        </div>
+    </form>
+    
+    <!-- 格式说明 -->
+    <div class="format-example">
+        <h4><i class="fas fa-info-circle"></i> JSON 格式示例</h4>
+        <pre>[
+  {
+    "name": "Python基础模板",
+    "language": "python",
+    "template_code": "# 读取输入\nn = int(input())\n\n# 处理逻辑\nresult = n\n\n# 输出结果\nprint(result)",
+    "description": "Python语言的基础算法模板",
+    "is_active": true
+  },
+  {
+    "name": "C++竞赛模板",
+    "language": "cpp",
+    "template_code": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // 代码内容\n    return 0;\n}",
+    "description": "C++竞赛编程模板",
+    "is_active": true
+  }
+]</pre>
+    </div>
+    
+    <div class="format-example">
+        <h4><i class="fas fa-info-circle"></i> CSV 格式示例</h4>
+        <pre>name,language,template_code,description,is_active
+Python基础模板,python,"# 读取输入
+n = int(input())
+
+# 处理逻辑
+result = n
+
+# 输出结果
+print(result)",Python语言的基础算法模板,true
+C++竞赛模板,cpp,"#include <iostream>
+using namespace std;
+
+int main() {
+    // 代码内容
+    return 0;
+}",C++竞赛编程模板,true</pre>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{% url 'admin:problems_globaltemplate_changelist' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回模板列表
+        </a>
+        <a href="{% url 'admin:problems_globaltemplate_statistics' %}" class="btn btn-info">
+            <i class="fas fa-chart-bar"></i> 查看统计
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const form = document.getElementById('importForm');
+    
+    // 点击上传区域触发文件选择
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'BUTTON') {
+            fileInput.click();
+        }
+    });
+    
+    // 拖拽事件
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+    
+    // 文件选择事件
+    fileInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+    
+    function handleFileSelect(file) {
+        // 验证文件类型
+        const allowedTypes = ['application/json', 'text/csv', 'application/vnd.ms-excel'];
+        const allowedExtensions = ['.json', '.csv'];
+        const fileName = file.name.toLowerCase();
+        
+        let isValidType = allowedTypes.includes(file.type) || 
+                         allowedExtensions.some(ext => fileName.endsWith(ext));
+        
+        if (!isValidType) {
+            alert('请选择 JSON 或 CSV 格式的文件');
+            fileInput.value = '';
+            return;
+        }
+        
+        // 显示文件信息
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileType').textContent = getFileType(file.name);
+        
+        fileInfo.style.display = 'block';
+        uploadBtn.disabled = false;
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function getFileType(fileName) {
+        const extension = fileName.split('.').pop().toLowerCase();
+        switch(extension) {
+            case 'json': return 'JSON 文件';
+            case 'csv': return 'CSV 文件';
+            default: return '未知类型';
+        }
+    }
+    
+    // 表单提交事件
+    form.addEventListener('submit', function(e) {
+        if (!fileInput.files.length) {
+            e.preventDefault();
+            alert('请先选择要导入的文件');
+            return;
+        }
+        
+        // 显示进度条
+        progressBar.style.display = 'block';
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 导入中...';
+        
+        // 模拟进度（实际项目中应该使用真实的上传进度）
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += Math.random() * 30;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+            }
+            progressFill.style.width = progress + '%';
+        }, 200);
+    });
+});
+</script>
+{% endblock %}

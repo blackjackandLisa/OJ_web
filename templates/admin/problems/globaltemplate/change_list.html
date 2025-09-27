@@ -1,0 +1,254 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .template-actions {
+        margin: 10px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .template-actions .btn {
+        margin-right: 10px;
+        margin-bottom: 5px;
+    }
+    
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .stat-card {
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: #007cba;
+        display: block;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+    
+    .language-filter {
+        margin: 10px 0;
+    }
+    
+    .language-filter .btn {
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .template-preview {
+        max-width: 200px;
+        max-height: 100px;
+        overflow: hidden;
+        font-family: 'Courier New', monospace;
+        font-size: 0.8em;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        padding: 5px;
+        border-radius: 3px;
+        white-space: pre-wrap;
+    }
+</style>
+{% endblock %}
+
+{% block content_title %}
+{% if title %}
+    <h1>{{ title }} 
+        <span class="badge badge-info">{{ total_templates }} 个模板</span>
+    </h1>
+{% endif %}
+{% endblock %}
+
+{% block result_list %}
+<!-- 统计摘要 -->
+<div class="stats-summary">
+    <div class="stat-card">
+        <span class="stat-number">{{ total_templates }}</span>
+        <div class="stat-label">总模板数</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ active_templates }}</span>
+        <div class="stat-label">活跃模板</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ inactive_templates }}</span>
+        <div class="stat-label">停用模板</div>
+    </div>
+    <div class="stat-card">
+        <span class="stat-number">{{ language_stats|length }}</span>
+        <div class="stat-label">支持语言</div>
+    </div>
+</div>
+
+<!-- 快速操作 -->
+<div class="template-actions">
+    <h3><i class="fas fa-tools"></i> 快速操作</h3>
+    <a href="{% url 'admin:problems_globaltemplate_add' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> 新建模板
+    </a>
+    <a href="{% url 'admin:problems_globaltemplate_statistics' %}" class="btn btn-info">
+        <i class="fas fa-chart-bar"></i> 查看统计
+    </a>
+    <a href="{% url 'admin:problems_globaltemplate_import' %}" class="btn btn-primary">
+        <i class="fas fa-upload"></i> 导入模板
+    </a>
+    <button type="button" class="btn btn-secondary" onclick="exportSelected()">
+        <i class="fas fa-download"></i> 导出选中
+    </button>
+    <button type="button" class="btn btn-warning" onclick="duplicateSelected()">
+        <i class="fas fa-copy"></i> 复制选中
+    </button>
+</div>
+
+<!-- 语言筛选 -->
+<div class="language-filter">
+    <h4><i class="fas fa-filter"></i> 按语言筛选</h4>
+    <a href="?" class="btn btn-outline-secondary btn-sm">全部</a>
+    {% for stat in language_stats %}
+    <a href="?language={{ stat.language }}" class="btn btn-outline-primary btn-sm">
+        {{ stat.language|upper }} ({{ stat.count }})
+    </a>
+    {% endfor %}
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+function exportSelected() {
+    const selected = getSelectedItems();
+    if (selected.length === 0) {
+        alert('请先选择要导出的模板');
+        return;
+    }
+    
+    // 创建表单并提交
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '';
+    
+    // 添加CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // 添加action
+    const actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = 'export_templates';
+    form.appendChild(actionInput);
+    
+    // 添加选中的项目
+    selected.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = '_selected_action';
+        input.value = id;
+        form.appendChild(input);
+    });
+    
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
+
+function duplicateSelected() {
+    const selected = getSelectedItems();
+    if (selected.length === 0) {
+        alert('请先选择要复制的模板');
+        return;
+    }
+    
+    if (confirm(`确定要复制选中的 ${selected.length} 个模板吗？`)) {
+        // 创建表单并提交
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '';
+        
+        // 添加CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // 添加action
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'duplicate_template';
+        form.appendChild(actionInput);
+        
+        // 添加选中的项目
+        selected.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = '_selected_action';
+            input.value = id;
+            form.appendChild(input);
+        });
+        
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    }
+}
+
+function getSelectedItems() {
+    const checkboxes = document.querySelectorAll('input[name="_selected_action"]:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// 语言筛选处理
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedLanguage = urlParams.get('language');
+    
+    if (selectedLanguage) {
+        // 高亮当前选中的语言按钮
+        const languageButtons = document.querySelectorAll('.language-filter .btn');
+        languageButtons.forEach(btn => {
+            if (btn.href && btn.href.includes(`language=${selectedLanguage}`)) {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add('btn-primary');
+            }
+        });
+        
+        // 筛选表格行
+        const rows = document.querySelectorAll('#result_list tbody tr');
+        rows.forEach(row => {
+            const languageCell = row.cells[1]; // 假设语言在第2列
+            if (languageCell && !languageCell.textContent.toLowerCase().includes(selectedLanguage)) {
+                row.style.display = 'none';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
