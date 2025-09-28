@@ -22,16 +22,16 @@ tzdata==2025.2
 gunicorn==21.2.0
 whitenoise==6.6.0
 
-# Database adapters (uncomment as needed)
+# Database adapters
 # PostgreSQL support
-# psycopg2-binary==2.9.9
+psycopg2-binary==2.9.9
 
 # MySQL support  
 # mysqlclient==2.2.4
 
 # Redis cache support
-# redis==5.0.1
-# django-redis==5.4.0
+redis==5.0.1
+django-redis==5.4.0
 
 # Security and monitoring
 # django-extensions==3.2.3

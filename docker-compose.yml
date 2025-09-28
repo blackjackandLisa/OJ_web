@@ -5,19 +5,27 @@ services:
   web:
     build: .
     container_name: django-oj-web
-    ports:
-      - "8000:8000"
     volumes:
       - ./media:/app/media
       - ./sandbox_tmp:/app/sandbox_tmp
       - ./judge_temp:/app/judge_temp
+    env_file:
+      - docker.env
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1
+      - DATABASE_URL=postgresql://oj_user:oj_password@db:5432/django_oj
+      - REDIS_URL=redis://redis:6379/1
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # PostgreSQL Database
   db:
@@ -29,19 +37,25 @@ services:
       POSTGRES_PASSWORD: oj_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oj_user -d django_oj"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Redis Cache
   redis:
     image: redis:7-alpine
     container_name: django-oj-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Nginx Reverse Proxy
   nginx:
