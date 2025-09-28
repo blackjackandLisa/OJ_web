@@ -189,6 +189,10 @@ LOGOUT_REDIRECT_URL = '/'
 # 判题系统配置
 JUDGE_DIR = BASE_DIR / 'judge_temp'
 
+# 判题引擎配置
+JUDGE_ENGINE = os.environ.get('JUDGE_ENGINE', 'auto')  # auto, docker, sandbox, basic
+SANDBOX_ENABLED = os.environ.get('SANDBOX_ENABLED', 'True').lower() == 'true'
+
 # Redis缓存配置
 if os.environ.get('REDIS_URL'):
     CACHES = {

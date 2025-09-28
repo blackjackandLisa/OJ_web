@@ -2,7 +2,7 @@ import logging
 from typing import Dict
 from django.utils import timezone
 from .models import JudgeQueue, JudgeResult
-from .engine import JudgeEngine
+from .engine_factory import JudgeEngineFactory
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ def process_judge_queue():
             return 0
         
         processed_count = 0
-        judge_engine = JudgeEngine()
+        judge_engine = JudgeEngineFactory.create_engine()
         
         for queue_item in queue_items:
             try:
