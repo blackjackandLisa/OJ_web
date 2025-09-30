@@ -48,12 +48,14 @@
 
 ## 📚 文档
 
+- **[服务器配置和访问指南](SERVER_SETUP_GUIDE.md)** - 🌟 **数据库配置 + 访问方式**（推荐必读）
+- **[超级简化部署指南](SIMPLE_DEPLOYMENT.md)** - 最简单的部署方式
 - **[部署指南](DEPLOYMENT_GUIDE.md)** - 完整的部署说明和配置指南
 - **[判题系统指南](JUDGE_SYSTEM_GUIDE.md)** - 判题系统架构和安全配置
 - **[依赖文件指南](REQUIREMENTS_GUIDE.md)** - 依赖包说明和安装指南
 - **[项目结构](PROJECT_STRUCTURE.md)** - 项目架构和文件组织
 - **[安全指南](JUDGE_SECURITY_GUIDE.md)** - 生产环境安全配置
-- **[Docker部署检查清单](DOCKER_DEPLOYMENT_CHECKLIST.md)** - 部署前检查
+- **[部署检查清单](DEPLOYMENT_CHECKLIST.md)** - 部署前检查
 
 ## 🚀 快速开始
 
