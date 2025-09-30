@@ -46,7 +46,32 @@
 - **进程沙箱**: Windows/Linux跨平台支持
 - **资源限制**: 时间、内存、文件大小限制
 
+## 📚 文档
+
+- **[部署指南](DEPLOYMENT_GUIDE.md)** - 完整的部署说明和配置指南
+- **[判题系统指南](JUDGE_SYSTEM_GUIDE.md)** - 判题系统架构和安全配置
+- **[安全指南](JUDGE_SECURITY_GUIDE.md)** - 生产环境安全配置
+- **[Docker部署检查清单](DOCKER_DEPLOYMENT_CHECKLIST.md)** - 部署前检查
+
 ## 🚀 快速开始
+
+### **一键部署（推荐）**
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
+
+# 2. 执行部署脚本
+chmod +x deploy.sh
+./deploy.sh
+```
+
+**就这么简单！** 脚本会自动检测环境并选择最佳部署方案。
+
+详细部署步骤请参考 [部署指南](DEPLOYMENT_GUIDE.md)。
+
+## 🔧 手动部署
 
 ### 环境要求
 - Python 3.8+

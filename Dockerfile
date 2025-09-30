@@ -22,7 +22,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements-linux.txt .
-RUN pip install --no-cache-dir -r requirements-linux.txt
+RUN apt-get update && apt-get install -y python3-pip && \
+    pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements-linux.txt && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy project
 COPY . .

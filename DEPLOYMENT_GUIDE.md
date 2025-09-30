@@ -1,61 +1,119 @@
-# 🚀 Django OJ系统部署指南
+# 🚀 Django OJ System - 部署指南
 
-## 📋 概述
+## 📋 **目录**
 
-本指南将帮助您将Django OJ系统从SQLite迁移到PostgreSQL，并配置Docker容器化部署。
+- [系统要求](#系统要求)
+- [快速开始](#快速开始)
+- [Docker部署](#docker部署推荐)
+- [本地部署](#本地部署)
+- [判题系统配置](#判题系统配置)
+- [故障排除](#故障排除)
 
-## 🔧 数据库迁移完成情况
+---
 
-### ✅ 已完成的配置
+## 系统要求
 
-1. **PostgreSQL依赖启用**
-   - `requirements-linux.txt` 中启用了 `psycopg2-binary`
-   - 启用了Redis支持 (`redis`, `django-redis`)
+### **最低配置**
+- **CPU**: 2核心
+- **内存**: 4GB RAM
+- **磁盘**: 20GB 可用空间
+- **操作系统**: Ubuntu 20.04+ / Debian 10+ / CentOS 8+
 
-2. **Django设置更新**
-   - 支持环境变量配置
-   - 根据 `DATABASE_URL` 自动选择数据库
-   - 配置了Redis缓存和会话存储
+### **推荐配置**
+- **CPU**: 4核心
+- **内存**: 8GB RAM
+- **磁盘**: 50GB 可用空间
+- **操作系统**: Ubuntu 22.04 LTS
 
-3. **Docker配置优化**
-   - 更新了 `docker-compose.yml` 使用环境变量
-   - 创建了 `docker.env` 环境变量文件
+### **软件要求**
+- Docker 20.10+
+- Docker Compose 2.0+
+- Git 2.0+
 
-4. **迁移脚本**
-   - `scripts/migrate_to_postgresql.py` - 数据库迁移脚本
-   - `scripts/init_database.sh` - 数据库初始化脚本
-   - `scripts/test_postgresql.py` - 连接测试脚本
+---
 
-## 🐳 Docker部署步骤
+## 快速开始
 
-### 1. 准备环境
+### **一键部署（推荐）**
 
 ```bash
-# 克隆项目（如果还没有）
-git clone <your-repo-url>
-cd django_OJ_02
+# 1. 克隆项目
+git clone https://github.com/blackjackandLisa/OJ_web.git
+cd OJ_web
 
-# 确保Docker和Docker Compose已安装
-docker --version
-docker-compose --version
+# 2. 执行部署脚本
+chmod +x deploy.sh
+./deploy.sh
 ```
 
-### 2. 配置环境变量
+**就这么简单！** 脚本会自动检测环境并选择最佳部署方案。
 
-编辑 `docker.env` 文件，设置生产环境的安全配置：
+---
+
+## Docker部署（推荐）
+
+### **步骤1：安装Docker和Docker Compose**
 
 ```bash
-# 生成安全的SECRET_KEY
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install -y docker.io docker-compose
 
-# 更新docker.env中的SECRET_KEY
-SECRET_KEY=your-generated-secret-key-here
+# 启动Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# 添加当前用户到docker组
+sudo usermod -aG docker $USER
+newgrp docker
 ```
 
-### 3. 启动服务
+### **步骤2：检查Docker环境**
 
 ```bash
-# 构建并启动所有服务
+# 检查Docker
+chmod +x scripts/check-docker.sh
+./scripts/check-docker.sh
+```
+
+### **步骤3：配置环境变量**
+
+```bash
+# 创建环境变量文件
+cp docker.env.example docker.env
+
+# 编辑环境变量（可选）
+nano docker.env
+```
+
+**关键配置项：**
+```bash
+# 数据库密码（建议修改）
+POSTGRES_PASSWORD=your_secure_password
+
+# Django密钥（建议修改）
+SECRET_KEY=your_secret_key
+
+# 允许的主机（根据实际情况修改）
+ALLOWED_HOSTS=yourdomain.com,localhost,127.0.0.1
+
+# 判题引擎（推荐使用docker）
+JUDGE_ENGINE=docker
+SANDBOX_ENABLED=True
+```
+
+### **步骤4：构建Docker Judger镜像**
+
+```bash
+# 构建安全判题镜像
+chmod +x scripts/build_judger.sh
+./scripts/build_judger.sh
+```
+
+### **步骤5：启动服务**
+
+```bash
+# 启动所有服务
 docker-compose up -d
 
 # 查看服务状态
@@ -65,155 +123,375 @@ docker-compose ps
 docker-compose logs -f web
 ```
 
-### 4. 初始化数据库
+### **步骤6：初始化数据库**
 
 ```bash
-# 进入web容器
-docker-compose exec web bash
+# 运行数据库迁移
+docker-compose exec web python manage.py migrate
 
-# 执行数据库迁移
+# 创建超级用户
+docker-compose exec web python manage.py createsuperuser
+
+# 创建默认模板
+docker-compose exec web python manage.py create_default_templates
+
+# 初始化判题配置
+docker-compose exec web python manage.py init_judge_config
+```
+
+### **步骤7：访问应用**
+
+- **前端**: http://localhost
+- **管理后台**: http://localhost/admin
+
+---
+
+## 本地部署
+
+### **步骤1：安装Python环境**
+
+```bash
+# 安装Python 3.11
+sudo apt-get update
+sudo apt-get install -y python3.11 python3.11-venv python3-pip
+```
+
+### **步骤2：创建虚拟环境**
+
+```bash
+# 创建虚拟环境
+python3.11 -m venv venv
+
+# 激活虚拟环境
+source venv/bin/activate
+
+# 升级pip
+pip install --upgrade pip
+```
+
+### **步骤3：安装依赖**
+
+```bash
+# 安装Python依赖
+pip install -r requirements.txt
+
+# 安装系统依赖（用于判题）
+sudo apt-get install -y gcc g++ default-jdk nodejs npm
+```
+
+### **步骤4：配置数据库**
+
+```bash
+# 使用SQLite（默认，适合开发）
+# 无需额外配置
+
+# 或使用PostgreSQL（推荐生产环境）
+sudo apt-get install -y postgresql postgresql-contrib
+sudo -u postgres createdb django_oj
+sudo -u postgres createuser oj_user -P
+```
+
+### **步骤5：运行迁移**
+
+```bash
+# 运行数据库迁移
 python manage.py migrate
 
 # 创建超级用户
 python manage.py createsuperuser
 
-# 收集静态文件
+# 创建默认模板
+python manage.py create_default_templates
+
+# 初始化判题配置
+python manage.py init_judge_config
+```
+
+### **步骤6：收集静态文件**
+
+```bash
 python manage.py collectstatic --noinput
 ```
 
-### 5. 验证部署
-
-访问以下URL验证部署：
-- 主应用: http://localhost:8000
-- 管理界面: http://localhost:8000/admin
-- API文档: http://localhost:8000/api/
-
-## 🔧 开发环境配置
-
-### 使用SQLite（开发）
+### **步骤7：启动服务**
 
 ```bash
-# 不设置DATABASE_URL，系统将使用SQLite
-python manage.py runserver
+# 开发环境
+python manage.py runserver 0.0.0.0:8000
+
+# 生产环境（使用Gunicorn）
+gunicorn oj_system.wsgi:application --bind 0.0.0.0:8000 --workers 3
 ```
 
-### 使用PostgreSQL（开发）
+---
+
+## 判题系统配置
+
+### **判题引擎类型**
+
+项目支持三种判题引擎：
+
+#### **1. Docker引擎（推荐生产环境）**
+
+**特点：**
+- ✅ 完全容器隔离
+- ✅ 最高安全性
+- ✅ 资源限制完善
+- ✅ 支持所有语言
+
+**配置：**
+```bash
+# 在docker.env中设置
+JUDGE_ENGINE=docker
+SANDBOX_ENABLED=True
+```
+
+**构建Judger镜像：**
+```bash
+python manage.py build_judger
+```
+
+#### **2. 沙箱引擎（推荐Linux开发环境）**
+
+**特点：**
+- ✅ 进程级隔离
+- ✅ 良好的安全性
+- ✅ 资源限制
+- ⚠️ 仅Linux系统
+
+**配置：**
+```bash
+JUDGE_ENGINE=sandbox
+SANDBOX_ENABLED=True
+```
+
+#### **3. 基础引擎（仅开发测试）**
+
+**特点：**
+- ⚠️ 无安全隔离
+- ⚠️ 仅供测试
+- ✅ 跨平台支持
+
+**配置：**
+```bash
+JUDGE_ENGINE=basic
+SANDBOX_ENABLED=False
+```
+
+### **支持的编程语言**
+
+- **Python** 3.x
+- **C++** (g++)
+- **C** (gcc)
+- **Java** (JDK 11+)
+- **JavaScript** (Node.js)
+
+### **资源限制配置**
+
+在Django管理后台可以配置每种语言的资源限制：
+
+- **时间限制**: 默认1-10秒
+- **内存限制**: 默认64-256MB
+- **文件大小限制**: 默认1MB
+
+---
+
+## 故障排除
+
+### **问题1：Docker镜像拉取失败**
+
+**解决方案：**
+```bash
+# 诊断网络问题
+chmod +x scripts/diagnose-network.sh
+./scripts/diagnose-network.sh
+```
+
+### **问题2：判题容器构建失败**
+
+**解决方案：**
+```bash
+# 检查Dockerfile
+cat docker/judger/Dockerfile
+
+# 手动构建
+cd docker/judger
+docker build -t django-oj-judger:latest .
+```
+
+### **问题3：数据库连接失败**
+
+**解决方案：**
+```bash
+# 检查数据库服务
+docker-compose ps db
+
+# 查看数据库日志
+docker-compose logs db
+
+# 重启数据库
+docker-compose restart db
+```
+
+### **问题4：静态文件无法加载**
+
+**解决方案：**
+```bash
+# 重新收集静态文件
+docker-compose exec web python manage.py collectstatic --noinput
+
+# 检查Nginx配置
+docker-compose logs nginx
+```
+
+### **问题5：判题任务不执行**
+
+**解决方案：**
+```bash
+# 检查判题引擎配置
+docker-compose exec web python manage.py shell
+>>> from django.conf import settings
+>>> print(settings.JUDGE_ENGINE)
+
+# 检查Judger镜像
+docker images | grep judger
+
+# 重新构建Judger
+python manage.py build_judger
+```
+
+### **获取帮助**
+
+- 查看日志: `docker-compose logs -f`
+- 进入容器: `docker-compose exec web bash`
+- 检查环境: `./scripts/check-docker.sh`
+- 诊断网络: `./scripts/diagnose-network.sh`
+
+---
+
+## 常用命令
+
+### **Docker Compose命令**
 
 ```bash
-# 设置环境变量
-export DATABASE_URL=postgresql://oj_user:oj_password@localhost:5432/django_oj
-export POSTGRES_HOST=localhost
-
-# 运行服务器
-python manage.py runserver
-```
-
-## 📊 数据库配置说明
-
-### 环境变量配置
-
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| `DATABASE_URL` | 无 | 设置后启用PostgreSQL |
-| `POSTGRES_DB` | django_oj | 数据库名称 |
-| `POSTGRES_USER` | oj_user | 数据库用户 |
-| `POSTGRES_PASSWORD` | oj_password | 数据库密码 |
-| `POSTGRES_HOST` | db | 数据库主机 |
-| `POSTGRES_PORT` | 5432 | 数据库端口 |
-| `REDIS_URL` | redis://redis:6379/1 | Redis连接URL |
-
-### 数据库选择逻辑
-
-```python
-if os.environ.get('DATABASE_URL'):
-    # 使用PostgreSQL
-else:
-    # 使用SQLite
-```
-
-## 🧪 测试脚本
-
-### 测试PostgreSQL连接
-
-```bash
-# 设置环境变量
-export DATABASE_URL=postgresql://oj_user:oj_password@localhost:5432/django_oj
-
-# 运行测试
-python scripts/test_postgresql.py
-```
-
-### 测试Docker部署
-
-```bash
-# 启动Docker服务
+# 启动服务
 docker-compose up -d
 
-# 测试连接
-docker-compose exec web python scripts/test_postgresql.py
+# 停止服务
+docker-compose down
+
+# 重启服务
+docker-compose restart
+
+# 查看日志
+docker-compose logs -f
+
+# 查看状态
+docker-compose ps
+
+# 进入容器
+docker-compose exec web bash
+
+# 清理资源
+docker-compose down -v
 ```
 
-## 🔒 安全配置
+### **Django管理命令**
 
-### 生产环境安全设置
+```bash
+# 创建迁移
+docker-compose exec web python manage.py makemigrations
 
-1. **更改默认密码**
-   ```bash
-   # 在docker.env中设置强密码
-   POSTGRES_PASSWORD=your-strong-password
-   ```
+# 应用迁移
+docker-compose exec web python manage.py migrate
 
-2. **设置安全的SECRET_KEY**
-   ```bash
-   # 生成新的SECRET_KEY
-   python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-   ```
+# 创建超级用户
+docker-compose exec web python manage.py createsuperuser
 
-3. **配置ALLOWED_HOSTS**
-   ```bash
-   # 在docker.env中设置允许的主机
-   ALLOWED_HOSTS=your-domain.com,www.your-domain.com
-   ```
+# 收集静态文件
+docker-compose exec web python manage.py collectstatic
 
-## 📝 故障排除
+# 初始化判题配置
+docker-compose exec web python manage.py init_judge_config
 
-### 常见问题
+# 构建判题镜像
+docker-compose exec web python manage.py build_judger
+```
 
-1. **数据库连接失败**
-   ```bash
-   # 检查PostgreSQL是否运行
-   docker-compose ps db
-   
-   # 查看数据库日志
-   docker-compose logs db
-   ```
+---
 
-2. **迁移失败**
-   ```bash
-   # 重置数据库
-   docker-compose down -v
-   docker-compose up -d
-   ```
+## 生产环境优化
 
-3. **静态文件问题**
-   ```bash
-   # 重新收集静态文件
-   docker-compose exec web python manage.py collectstatic --noinput
-   ```
+### **1. 使用Nginx反向代理**
 
-## 🎯 下一步
+已包含在`docker-compose.yml`中，默认监听80端口。
 
-数据库迁移已完成！接下来可以：
+### **2. 配置HTTPS**
 
-1. **测试Docker部署** - 在Linux服务器上部署
-2. **配置生产环境** - 设置域名、SSL证书等
-3. **监控和日志** - 配置日志收集和监控
-4. **备份策略** - 设置数据库备份
+```bash
+# 安装Certbot
+sudo apt-get install -y certbot python3-certbot-nginx
 
-## 📞 支持
+# 获取SSL证书
+sudo certbot --nginx -d yourdomain.com
+```
 
-如果遇到问题，请检查：
-1. Docker和Docker Compose版本
-2. 环境变量配置
-3. 网络连接
-4. 日志输出
+### **3. 性能优化**
+
+```bash
+# 增加Gunicorn workers
+# 在docker.env中设置
+GUNICORN_WORKERS=4
+
+# 配置Redis缓存
+REDIS_URL=redis://redis:6379/1
+```
+
+### **4. 日志管理**
+
+```bash
+# 配置日志级别
+LOG_LEVEL=INFO
+
+# 查看日志
+docker-compose logs -f web
+```
+
+---
+
+## 安全建议
+
+1. **修改默认密码**: 修改数据库和Django密钥
+2. **启用HTTPS**: 使用SSL证书
+3. **配置防火墙**: 只开放必要端口
+4. **定期备份**: 备份数据库和用户数据
+5. **更新依赖**: 定期更新软件包
+6. **使用Docker沙箱**: 生产环境必须使用Docker判题引擎
+
+---
+
+## 更新系统
+
+```bash
+# 拉取最新代码
+git pull origin main
+
+# 重新构建并启动
+docker-compose up -d --build
+
+# 运行迁移
+docker-compose exec web python manage.py migrate
+
+# 收集静态文件
+docker-compose exec web python manage.py collectstatic --noinput
+```
+
+---
+
+## 许可证
+
+MIT License
+
+## 支持
+
+如有问题，请提交Issue或联系开发者。

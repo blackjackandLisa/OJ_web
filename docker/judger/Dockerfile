@@ -16,8 +16,8 @@ RUN apt-get update && apt-get install -y \
     time \
     && rm -rf /var/lib/apt/lists/*
 
-# 创建非特权用户
-RUN useradd -m -u 1000 judger && \
+# 创建非特权用户（不指定UID，避免冲突）
+RUN useradd -m judger && \
     mkdir -p /sandbox && \
     chown judger:judger /sandbox
 
