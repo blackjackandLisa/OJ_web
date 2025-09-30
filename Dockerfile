@@ -23,8 +23,9 @@ RUN apt-get update && apt-get install -y \
 # Install Python dependencies
 COPY requirements-linux.txt .
 RUN apt-get update && apt-get install -y python3-pip && \
-    pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements-linux.txt && \
+    rm /usr/lib/python*/EXTERNALLY-MANAGED 2>/dev/null || true && \
+    pip install --upgrade pip --break-system-packages && \
+    pip install --no-cache-dir -r requirements-linux.txt --break-system-packages && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy project
