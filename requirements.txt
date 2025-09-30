@@ -1,7 +1,23 @@
-asgiref==3.9.2
+# Django Online Judge System - Requirements
+# 基础依赖文件 - 适用于所有环境
+
+# Core Django
 Django==4.2.24
-django-cors-headers==4.8.0
 djangorestframework==3.16.0
-pillow==10.2.0
+django-cors-headers==4.8.0
+
+# Database
 sqlparse==0.5.3
+asgiref==3.9.2
+
+# Image processing
+Pillow==10.2.0
+
+# Timezone data
 tzdata==2025.2
+
+# System monitoring
+psutil==5.9.8
+
+# Markdown support
+markdown==3.5.2

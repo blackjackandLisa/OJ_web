@@ -1,0 +1,53 @@
+# Django Online Judge System - Development Requirements
+# 用于本地开发环境
+
+# 包含基础依赖
+-r requirements.txt
+
+# ==================== Development Tools ====================
+# Django extensions
+django-extensions==3.2.3
+
+# Debug toolbar
+django-debug-toolbar==4.4.0
+
+# Code quality
+pylint==3.0.3
+flake8==7.0.0
+black==24.1.1
+
+# Testing
+pytest==7.4.4
+pytest-django==4.7.0
+pytest-cov==4.1.0
+factory-boy==3.3.0
+
+# Database tools
+# PostgreSQL for local development
+# psycopg2-binary==2.9.9
+
+# Docker support
+docker==7.0.0
+
+# System monitoring
+psutil==5.9.8
+
+# HTTP requests
+requests==2.31.0
+
+# Markdown
+markdown==3.5.2
+
+# ==================== Development Server ====================
+# Development WSGI server
+# gunicorn==21.2.0
+
+# ==================== Optional Tools ====================
+# API documentation
+# drf-yasg==1.21.7
+
+# Code formatting
+# autopep8==2.0.4
+
+# Import sorting
+# isort==5.13.2

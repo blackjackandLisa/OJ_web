@@ -50,6 +50,8 @@
 
 - **[部署指南](DEPLOYMENT_GUIDE.md)** - 完整的部署说明和配置指南
 - **[判题系统指南](JUDGE_SYSTEM_GUIDE.md)** - 判题系统架构和安全配置
+- **[依赖文件指南](REQUIREMENTS_GUIDE.md)** - 依赖包说明和安装指南
+- **[项目结构](PROJECT_STRUCTURE.md)** - 项目架构和文件组织
 - **[安全指南](JUDGE_SECURITY_GUIDE.md)** - 生产环境安全配置
 - **[Docker部署检查清单](DOCKER_DEPLOYMENT_CHECKLIST.md)** - 部署前检查
 
