@@ -57,21 +57,31 @@
 
 ## 🚀 快速开始
 
-### **一键部署（推荐）**
+### **超级简化部署（推荐）⭐**
+
+只需3个命令，2分钟部署完成！
 
 ```bash
 # 1. 克隆项目
 git clone https://github.com/blackjackandLisa/OJ_web.git
 cd OJ_web
 
-# 2. 执行部署脚本
-chmod +x deploy.sh
-./deploy.sh
+# 2. 执行简化部署脚本
+chmod +x deploy-simple.sh
+./deploy-simple.sh
 ```
 
-**就这么简单！** 脚本会自动检测环境并选择最佳部署方案。
+**特点：**
+- ⚡ 超级简单 - 只需Docker即可
+- 🐘 PostgreSQL数据库
+- 🛡️ 进程沙箱判题（轻量安全）
+- 📦 最小化配置
 
-详细部署步骤请参考 [部署指南](DEPLOYMENT_GUIDE.md)。
+详细说明请参考 **[超级简化部署指南](SIMPLE_DEPLOYMENT.md)** 👈
+
+### **完整部署方案**
+
+如需更多自定义配置，请参考 [完整部署指南](DEPLOYMENT_GUIDE.md)。
 
 ## 🔧 手动部署
 
