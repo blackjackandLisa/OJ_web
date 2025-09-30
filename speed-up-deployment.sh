@@ -30,19 +30,29 @@ echo "=========================================="
 log_info "停止旧容器..."
 docker-compose down 2>/dev/null || true
 
-# 使用阿里云镜像拉取PostgreSQL
+# 使用国内公开镜像源拉取PostgreSQL
 log_info "🚀 使用国内镜像源拉取PostgreSQL（速度更快）..."
-docker pull registry.cn-hangzhou.aliyuncs.com/library/postgres:15-alpine
 
-# 重新标记为原镜像名
-log_info "重新标记镜像..."
-docker tag registry.cn-hangzhou.aliyuncs.com/library/postgres:15-alpine postgres:15-alpine
+# 尝试多个镜像源，找到可用的
+if docker pull docker.1panel.live/library/postgres:15-alpine 2>/dev/null; then
+    log_info "使用1Panel镜像源"
+    docker tag docker.1panel.live/library/postgres:15-alpine postgres:15-alpine
+elif docker pull docker.m.daocloud.io/library/postgres:15-alpine 2>/dev/null; then
+    log_info "使用DaoCloud镜像源"
+    docker tag docker.m.daocloud.io/library/postgres:15-alpine postgres:15-alpine
+elif docker pull mirror.ccs.tencentyun.com/library/postgres:15-alpine 2>/dev/null; then
+    log_info "使用腾讯云镜像源"
+    docker tag mirror.ccs.tencentyun.com/library/postgres:15-alpine postgres:15-alpine
+else
+    log_warning "国内镜像源不可用，使用Docker Hub（可能较慢）"
+    docker pull postgres:15-alpine
+fi
 
 log_success "✅ PostgreSQL镜像准备完成！"
 
 # 拉取Python镜像（如果需要）
 log_info "🚀 拉取Python镜像..."
-docker pull registry.cn-hangzhou.aliyuncs.com/library/python:3.11-slim || docker pull python:3.11-slim
+docker pull python:3.11-slim 2>/dev/null || log_warning "Python镜像将在构建时下载"
 
 log_success "✅ 所有镜像准备完成！"
 
