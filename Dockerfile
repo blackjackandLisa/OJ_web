@@ -35,7 +35,8 @@ COPY . .
 RUN mkdir -p sandbox_tmp judge_temp media/avatars staticfiles logs
 
 # Set permissions
-RUN chmod -R 755 sandbox_tmp judge_temp media
+RUN chmod -R 755 sandbox_tmp judge_temp media logs && \
+    chmod -R 777 logs
 
 # Create startup script
 RUN echo '#!/bin/bash\n\

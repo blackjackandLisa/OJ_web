@@ -222,6 +222,10 @@ SECURE_CONTENT_TYPE_NOSNIFF = os.environ.get('SECURE_CONTENT_TYPE_NOSNIFF', 'Tru
 X_FRAME_OPTIONS = os.environ.get('X_FRAME_OPTIONS', 'DENY')
 
 # 日志配置
+import os
+LOG_DIR = os.environ.get('LOG_DIR', '/app/logs')
+os.makedirs(LOG_DIR, exist_ok=True)  # 确保日志目录存在
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -236,12 +240,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': os.environ.get('LOG_LEVEL', 'INFO'),
-            'class': 'logging.FileHandler',
-            'filename': '/app/logs/django.log',
-            'formatter': 'verbose',
-        },
         'console': {
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
             'class': 'logging.StreamHandler',
@@ -249,14 +247,34 @@ LOGGING = {
         },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console'],
         'level': os.environ.get('LOG_LEVEL', 'INFO'),
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': os.environ.get('LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
     },
 }
+
+# 仅在生产环境且日志目录可写时启用文件日志
+if not DEBUG:
+    try:
+        # 测试是否可以写入日志文件
+        test_log_file = os.path.join(LOG_DIR, 'django.log')
+        with open(test_log_file, 'a') as f:
+            pass
+        # 如果可以写入，添加文件处理器
+        LOGGING['handlers']['file'] = {
+            'level': os.environ.get('LOG_LEVEL', 'INFO'),
+            'class': 'logging.FileHandler',
+            'filename': test_log_file,
+            'formatter': 'verbose',
+        }
+        LOGGING['root']['handlers'].append('file')
+        LOGGING['loggers']['django']['handlers'].append('file')
+    except (IOError, OSError, PermissionError):
+        # 如果无法写入文件，只使用console日志
+        pass
